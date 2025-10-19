@@ -2,20 +2,19 @@ package iuh.fit.se.wwwacestore.dto.request;
 
 import iuh.fit.se.wwwacestore.entity.enums.ProductType;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
-public class ProductRequest {
+public class ProductForm {
     private String name;
     private String brand;
     private String description;
     private ProductType type;
     private BigDecimal price;
     private Integer stock;
-    private String mainImage;
-    private List<String> images;
+    private Long promotionId;
 
     private String cpu;
     private String gpu;
@@ -25,5 +24,7 @@ public class ProductRequest {
     private String keyboardType;
     private String connectivity;
 
-    private Long promotionId;
+    // files
+    private MultipartFile mainImage;
+    private MultipartFile[] images;
 }

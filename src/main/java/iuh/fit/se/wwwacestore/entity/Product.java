@@ -15,12 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String brand;
+
+    @Column(length = 2000)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -32,6 +33,8 @@ public class Product {
     private String mainImage;
 
     @ElementCollection
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url", length = 1000)
     private List<String> images;
 
     private String cpu;
@@ -42,7 +45,7 @@ public class Product {
     private String keyboardType;
     private String connectivity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "promotion_id")
     private Promotion promotion;
 }
