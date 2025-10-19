@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout (~{::body})}">
+<head>
+    <title>Admin - Promotions</title>
+</head>
+<body>
+<section>
+    <h1>Admin - Promotions</h1>
+    <a href="/admin/promotions/new">Create new promotion</a>
+    <div id="promo-list">Loading...</div>
+</section>
+
+<script>
+    async function loadPromos() {
+        const el = document.getElementById('promo-list');
+        el.innerText = 'Loading...';
+        try {
+            const r = await fetch('/api/promotions');
+            const res = await r.json();
+            if (!res.success) { el.innerText = 'Error: ' + res.message; return; }
+            const promos = res.data || [];
+            if (!promos.length) { el.innerText = 'No promotions'; return; }
+
+            const table = document.createElement('table');
+            table.innerHTML = `<thead><tr><th>ID</th><th>Name</th><th>Discount%</th><th>Active</th><th>Actions</th></tr></thead><tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+            promos.forEach(p=>{
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td>${p.id}</td>
+                <td>${p.name}</td>
+                <td>${p.discountPercent}</td>
+                <td>${p.active}</td>
+                <td>
+                    <a href="/admin/promotions/${p.id}/edit">Edit</a>
+                    <button data-id="${p.id}" class="del">Delete</button>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            });
+            el.innerHTML = '';
+            el.appendChild(table);
+
+            el.querySelectorAll('.del').forEach(b=>{
+                b.addEventListener('click', async e=>{
+                    const id = e.target.getAttribute('data-id');
+                    if (!confirm('Delete promotion '+id+'?')) return;
+                    const r = await fetch('/api/promotions/' + id, { method: 'DELETE' });
+                    const rr = await r.json();
+                    if (rr.success) loadPromos(); else alert('Error: ' + rr.message);
+                });
+            });
+        } catch (err) { el.innerText = 'Fetch error: ' + err; }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPromos);
+</script>
+</body>
+</html>

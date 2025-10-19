@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${pageTitle} ?: 'WWWAce Store'">WWWAce Store</title>
+    <link rel="stylesheet" href="/css/main.css"/>
+</head>
+<body>
+<header>
+    <nav>
+        <!-- menu -->
+    </nav>
+</header>
+
+<!-- Định nghĩa fragment layout và nhận tham số body -->
+<div th:fragment="layout (body)">
+    <!-- header cố định -->
+    <section id="content" th:replace="${body}"> <!-- chèn body ở đây --> </section>
+
+    <footer>
+        <p>© WWWAce Store</p>
+    </footer>
+</div>
+</body>
+</html>

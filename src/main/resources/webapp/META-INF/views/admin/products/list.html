@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout (~{::body})}">
+<head>
+    <title>Admin - Products</title>
+</head>
+<body>
+<section>
+    <h1>Admin - Products</h1>
+    <a href="/admin/products/new">Create new product</a>
+    <div id="admin-product-list">Loading...</div>
+</section>
+
+<script>
+    async function loadProducts() {
+        const el = document.getElementById('admin-product-list');
+        el.innerText = 'Loading...';
+        try {
+            const r = await fetch('/api/products');
+            const res = await r.json();
+            if (!res.success) { el.innerText = 'Error: ' + res.message; return; }
+            const products = res.data || [];
+            if (!products.length) { el.innerText = 'No products'; return; }
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+            <thead><tr><th>ID</th><th>Name</th><th>Brand</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+        `;
+            const tbody = table.querySelector('tbody');
+            products.forEach(p=>{
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td>${p.id}</td>
+                <td>${p.name}</td>
+                <td>${p.brand || ''}</td>
+                <td>${p.price}</td>
+                <td>${p.stock}</td>
+                <td>
+                    <a href="/admin/products/${p.id}/edit">Edit</a>
+                    <button data-id="${p.id}" class="delete-btn">Delete</button>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            });
+            el.innerHTML = '';
+            el.appendChild(table);
+
+            el.querySelectorAll('.delete-btn').forEach(btn=>{
+                btn.addEventListener('click', async e=>{
+                    const id = e.target.getAttribute('data-id');
+                    if (!confirm('Delete product ' + id + '?')) return;
+                    const resp = await fetch('/api/products/' + id, { method: 'DELETE' });
+                    const rr = await resp.json();
+                    if (rr.success) {
+                        alert('Deleted');
+                        loadProducts();
+                    } else alert('Error: ' + rr.message);
+                });
+            });
+        } catch (err) { el.innerText = 'Fetch error: ' + err; }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProducts);
+</script>
+</body>
+</html>

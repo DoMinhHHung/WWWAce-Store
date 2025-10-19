@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout (~{::body})}">
+<head>
+    <title>Product Detail</title>
+</head>
+<body>
+<section>
+    <a href="/">Back</a>
+    <div id="product-detail">Loading...</div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const idMatch = location.pathname.match(/\/products\/(\d+)\/page/);
+        if (!idMatch) {
+            document.getElementById('product-detail').innerText = 'Invalid product id';
+            return;
+        }
+        const id = idMatch[1];
+        fetch('/api/products/' + id)
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) {
+                    document.getElementById('product-detail').innerText = 'Error: ' + res.message;
+                    return;
+                }
+                const p = res.data;
+                document.getElementById('product-detail').innerHTML = `
+                <h2>${p.name}</h2>
+                <img src="${p.mainImage || ''}" width="400" />
+                <p>Brand: ${p.brand}</p>
+                <p>Price: ${p.price}</p>
+                <p>Stock: ${p.stock}</p>
+                <p>Description: ${p.description || ''}</p>
+                <p>Specs: CPU ${p.cpu || '-'}, GPU ${p.gpu || '-'}, RAM ${p.ram || '-'}</p>
+                ${p.images && p.images.length ? '<div>' + p.images.map(u=>`<img src="${u}" width="120" style="margin:4px">`).join('') + '</div>' : ''}
+            `;
+            })
+            .catch(err => { document.getElementById('product-detail').innerText = 'Fetch error: ' + err; });
+    });
+</script>
+</body>
+</html>
