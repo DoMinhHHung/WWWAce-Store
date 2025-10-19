@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout (~{::body})}">
+<head>
+    <title>Admin - Product Form</title>
+</head>
+<body>
+<section>
+    <h1 id="mode-title">Create Product</h1>
+    <form id="product-form">
+        <input type="hidden" id="product-id" />
+        <div><label>Name: <input name="name" id="name" /></label></div>
+        <div><label>Brand: <input name="brand" id="brand" /></label></div>
+        <div><label>Price: <input name="price" id="price" type="number" step="0.01" /></label></div>
+        <div><label>Stock: <input name="stock" id="stock" type="number" /></label></div>
+        <div><label>PromotionId: <input name="promotionId" id="promotionId" /></label></div>
+        <div><label>Description: <textarea id="description" name="description"></textarea></label></div>
+
+        <div><label>CPU: <input id="cpu" name="cpu" /></label></div>
+        <div><label>GPU: <input id="gpu" name="gpu" /></label></div>
+        <div><label>RAM: <input id="ram" name="ram" /></label></div>
+        <div><label>Storage: <input id="storage" name="storage" /></label></div>
+        <div><label>Screen: <input id="screen" name="screen" /></label></div>
+        <div><label>Keyboard Type: <input id="keyboardType" name="keyboardType" /></label></div>
+        <div><label>Connectivity: <input id="connectivity" name="connectivity" /></label></div>
+
+        <div><label>Main Image: <input type="file" id="mainImage" name="mainImage" accept="image/*" /></label></div>
+        <div><label>Other Images: <input type="file" id="images" name="images" multiple accept="image/*" /></label></div>
+
+        <button type="submit">Save</button>
+        <a href="/admin/products">Back</a>
+    </form>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const pathMatch = location.pathname.match(/\/admin\/products\/(\d+)\/edit/);
+        const form = document.getElementById('product-form');
+
+        if (pathMatch) {
+            // Edit mode: load product data
+            const id = pathMatch[1];
+            document.getElementById('mode-title').innerText = 'Edit Product ' + id;
+            document.getElementById('product-id').value = id;
+
+            fetch('/api/products/' + id)
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success) { alert('Error: ' + res.message); return; }
+                    const p = res.data;
+                    document.getElementById('name').value = p.name || '';
+                    document.getElementById('brand').value = p.brand || '';
+                    document.getElementById('price').value = p.price || '';
+                    document.getElementById('stock').value = p.stock || '';
+                    document.getElementById('promotionId').value = p.promotion ? p.promotion.id : '';
+                    document.getElementById('description').value = p.description || '';
+                    document.getElementById('cpu').value = p.cpu || '';
+                    document.getElementById('gpu').value = p.gpu || '';
+                    document.getElementById('ram').value = p.ram || '';
+                    document.getElementById('storage').value = p.storage || '';
+                    document.getElementById('screen').value = p.screen || '';
+                    document.getElementById('keyboardType').value = p.keyboardType || '';
+                    document.getElementById('connectivity').value = p.connectivity || '';
+                })
+                .catch(err => alert('Fetch error: ' + err));
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('product-id').value;
+            const fd = new FormData();
+            fd.append('name', document.getElementById('name').value);
+            fd.append('brand', document.getElementById('brand').value);
+            fd.append('price', document.getElementById('price').value);
+            fd.append('stock', document.getElementById('stock').value);
+            fd.append('promotionId', document.getElementById('promotionId').value || '');
+            fd.append('description', document.getElementById('description').value || '');
+            fd.append('cpu', document.getElementById('cpu').value || '');
+            fd.append('gpu', document.getElementById('gpu').value || '');
+            fd.append('ram', document.getElementById('ram').value || '');
+            fd.append('storage', document.getElementById('storage').value || '');
+            fd.append('screen', document.getElementById('screen').value || '');
+            fd.append('keyboardType', document.getElementById('keyboardType').value || '');
+            fd.append('connectivity', document.getElementById('connectivity').value || '');
+
+            const mainImage = document.getElementById('mainImage').files[0];
+            if (mainImage) fd.append('mainImage', mainImage);
+
+            const images = document.getElementById('images').files;
+            for (let i = 0; i < images.length; i++) {
+                fd.append('images', images[i]);
+            }
+
+            const url = id ? '/api/products/' + id : '/api/products';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const resp = await fetch(url, { method, body: fd });
+                const rr = await resp.json();
+                if (rr.success) {
+                    alert('Saved');
+                    window.location.href = '/admin/products';
+                } else {
+                    alert('Error: ' + rr.message);
+                }
+            } catch (err) {
+                alert('Submit error: ' + err);
+            }
+        });
+    });
+</script>
+</body>
+</html>

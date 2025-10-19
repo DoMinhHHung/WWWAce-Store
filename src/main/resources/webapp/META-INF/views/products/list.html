@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout (~{::body})}">
+<head>
+    <title>Products</title>
+</head>
+<body>
+<section>
+    <h1>Products</h1>
+    <div id="product-list">Loading...</div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const listEl = document.getElementById('product-list');
+
+        fetch('/api/products')
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) {
+                    listEl.innerText = 'Error: ' + res.message;
+                    return;
+                }
+                const products = res.data || [];
+                if (products.length === 0) {
+                    listEl.innerText = 'No products';
+                    return;
+                }
+                const grid = document.createElement('div');
+                grid.className = 'grid';
+                products.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'product-card';
+                    div.innerHTML = `
+                    <img src="${p.mainImage || ''}" alt="${p.name}" width="200" />
+                    <h3>${p.name}</h3>
+                    <p>${p.brand || ''}</p>
+                    <p>Price: ${p.price}</p>
+                    <a href="/products/${p.id}/page">Details</a>
+                `;
+                    grid.appendChild(div);
+                });
+                listEl.innerHTML = '';
+                listEl.appendChild(grid);
+            })
+            .catch(err => { listEl.innerText = 'Fetch error: ' + err; });
+    });
+</script>
+</body>
+</html>
